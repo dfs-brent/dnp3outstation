@@ -1,0 +1,31 @@
+	select value from rt_status where address='1174F4';
+	select value from rt_status where address='1174F5';
+	select value from rt_status where address='1174F6';
+
+	DROP TABLE IF EXISTS dnp3events;
+	CREATE TABLE dnp3events(
+		ix TINYINT(4) AUTO_INCREMENT, 
+		address VARCHAR(100), 
+		type CHAR(2), 
+		value FLOAT(15,5), 
+		stamp DATETIME, 
+		reliability TINYINT(4), 
+		PRIMARY KEY (ix)
+	);
+
+	DROP TRIGGER IF EXISTS dnp3;
+
+DELIMITER //
+
+CREATE TRIGGER dnp3 AFTER UPDATE ON rt_status FOR EACH ROW
+	BEGIN
+		IF (new.mchar != 'X') && (new.mchar != 'V')  THEN
+			INSERT INTO 
+				dnp3events(address,type,value,stamp,reliability) 
+					VALUES(new.address,new.type,new.value,NOW(),new.reliability);
+		END IF;
+	END; //
+
+DELIMITER ;
+
+

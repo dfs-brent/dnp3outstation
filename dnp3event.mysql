@@ -1,0 +1,26 @@
+DROP TABLE IF EXISTS dnp3events;
+CREATE TABLE dnp3events(
+	ix int AUTO_INCREMENT, 
+	address VARCHAR(100), 
+	type CHAR(5), 
+	value FLOAT(15,5), 
+	stamp DATETIME, 
+	reliability TINYINT(4), 
+	PRIMARY KEY (ix)
+);
+
+DROP TRIGGER IF EXISTS dnp3event;
+
+DELIMITER //
+
+CREATE TRIGGER dnp3event AFTER UPDATE ON rt_status FOR EACH ROW
+BEGIN
+	IF (new.mchar != 'X') && (new.mchar != 'V')  THEN
+		INSERT INTO 
+			dnp3events(address,type,value,stamp,reliability) 
+				VALUES(new.address,new.type,new.value,NOW(),new.reliability);
+	END IF;
+END; //
+
+DELIMITER ;
+
